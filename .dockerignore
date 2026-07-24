@@ -1,0 +1,35 @@
+# Python Cache & Builds
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+app.egg-info/
+pip-log.txt
+.mypy_cache/
+.pyre/
+.coverage
+htmlcov/
+
+# Local database data (from docker volumes)
+data/
+
+# Version Control
+.git/
+.gitignore
+
+# Secrets & Environment configs (critical for security!)
+.env
+.env.*
+
+# IDE / Editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local tools & static config
+pyrefly.toml

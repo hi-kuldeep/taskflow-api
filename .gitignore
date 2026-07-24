@@ -164,3 +164,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Database data volumes
+data
