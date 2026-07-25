@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field
 from pydantic_partial import PartialModelMixin
+import uuid
+from datetime import datetime
+from pydantic import ConfigDict
 
 class TaskSchema(PartialModelMixin, BaseModel):
     title: str = Field(
@@ -21,3 +24,7 @@ class TaskSchema(PartialModelMixin, BaseModel):
 
 
 TaskUpdateSchema = TaskSchema.model_as_partial() 
+
+class TaskResponseSchema(TaskSchema):
+    id : uuid.UUID
+    model_config = ConfigDict(from_attributes=True)
