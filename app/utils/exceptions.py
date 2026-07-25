@@ -4,10 +4,14 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.constent.response_model import ErrorResponseSchema
+from app.constent.exception import CustomException, custom_exception_handler
 
 
 def register_error_handlers(app: FastAPI) -> None:
     """Registers global exception handlers for the FastAPI application."""
+
+    # Register custom exception handler
+    app.add_exception_handler(CustomException, custom_exception_handler)
 
     # Global exception handler to intercept standard HTTP exceptions (e.g., 404, 403, 401).
     @app.exception_handler(StarletteHTTPException)
