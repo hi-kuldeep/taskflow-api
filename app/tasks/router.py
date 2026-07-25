@@ -10,7 +10,7 @@ task_routes = APIRouter(prefix="/tasks", tags=["Tasks"])
 @task_routes.post("/create",
 response_model=SuccessResponseSchema[TaskResponseSchema],
  status_code=status.HTTP_201_CREATED)
-def create_task_router(task_schema: TaskSchema , db : Session = Depends(get_db)) -> SuccessResponseDict:
+def create_task_router(task_schema: TaskSchema , db : Session = Depends(get_db)) -> SuccessResponseDict[TaskResponseSchema]:
     task = create_task(task_schema , db)
     return  {
         "message" : "Task created successfully!",

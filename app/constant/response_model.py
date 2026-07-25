@@ -2,10 +2,10 @@ from typing import Any, Generic, Optional, TypeVar, TypedDict
 from pydantic import BaseModel
 T = TypeVar('T')
 
-class SuccessResponseDict(TypedDict):
+class SuccessResponseDict(TypedDict , Generic[T]):
     message: str
     status: int
-    data: Any
+    data: T | None
 
 class SuccessResponseSchema(BaseModel , Generic[T]):
     message : Optional[str] = ''
