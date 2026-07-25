@@ -1,4 +1,4 @@
-from app.constent.exception import CustomException
+from app.constant.exception import CustomException
 from app.tasks.dtos import TaskSchema, TaskUpdateSchema
 from sqlalchemy.orm import Session
 from app.tasks.models import TaskModel

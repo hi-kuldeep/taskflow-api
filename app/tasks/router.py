@@ -3,7 +3,7 @@ from app.tasks import create_task, get_tasks , get_task_by_id, update_task, dele
 from app.tasks.dtos import TaskSchema, TaskUpdateSchema, TaskResponseSchema
 from app.core import get_db
 from sqlalchemy.orm import Session
-from app.constent.response_model import SuccessResponseSchema
+from app.constant.response_model import SuccessResponseSchema
 task_routes = APIRouter(prefix="/tasks", tags=["Tasks"])
 
 

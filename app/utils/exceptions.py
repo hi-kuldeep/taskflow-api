@@ -3,8 +3,8 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from app.constent.response_model import ErrorResponseSchema
-from app.constent.exception import CustomException, custom_exception_handler
+from app.constant.response_model import ErrorResponseSchema
+from app.constant.exception import CustomException, custom_exception_handler
 
 
 def register_error_handlers(app: FastAPI) -> None:
