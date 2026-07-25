@@ -3,14 +3,14 @@ from app.tasks import create_task, get_tasks , get_task_by_id, update_task, dele
 from app.tasks.dtos import TaskSchema, TaskUpdateSchema, TaskResponseSchema
 from app.core import get_db
 from sqlalchemy.orm import Session
-from app.constant.response_model import SuccessResponseSchema
+from app.constant.response_model import SuccessResponseSchema, SuccessResponseDict
 task_routes = APIRouter(prefix="/tasks", tags=["Tasks"])
 
 
 @task_routes.post("/create",
 response_model=SuccessResponseSchema[TaskResponseSchema],
  status_code=status.HTTP_201_CREATED)
-def create_task_router(task_schema: TaskSchema , db : Session = Depends(get_db)) :
+def create_task_router(task_schema: TaskSchema , db : Session = Depends(get_db)) -> SuccessResponseDict:
     task = create_task(task_schema , db)
     return  {
         "message" : "Task created successfully!",
