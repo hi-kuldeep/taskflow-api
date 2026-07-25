@@ -159,7 +159,9 @@ ehthumbs.db
 Thumbs.db
 
 # IDEs and editors
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo
