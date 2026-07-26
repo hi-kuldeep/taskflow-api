@@ -4,8 +4,10 @@ from typing import Callable, TypeVar, Any
 import jwt
 from jwt import InvalidTokenError, ExpiredSignatureError
 from pwdlib import PasswordHash
-from fastapi import Request, status
+from fastapi import Depends, Request, status
+from sqlalchemy.orm import Session
 
+from app.core import get_db
 from app.core.config import settings
 from app.constant.exception import CustomException
 
@@ -61,7 +63,10 @@ def verify_token(token: str) -> dict:
         )
 
 
-def verify_required_token(request: Request) -> dict:
+def verify_required_token(request: Request, db: Session = Depends(get_db)) -> Any:
+    if hasattr(request.state, "user") and request.state.user is not None:
+        return request.state.user
+
     authorization: str | None = request.headers.get("Authorization")
 
     if not authorization:
@@ -79,11 +84,30 @@ def verify_required_token(request: Request) -> dict:
         )
 
     payload = verify_token(token)
-    request.state.user = payload
-    return payload
+    
+    username = payload.get("sub")
+    if not username:
+        raise CustomException(
+            "Invalid token payload",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    from app.user.models import UserModel
+    user = db.query(UserModel).filter(UserModel.username == username).first()
+    if not user:
+        raise CustomException(
+            "User not found",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    request.state.user = user
+    return user
 
 
-def verify_optional_token(request: Request) -> dict | None:
+def verify_optional_token(request: Request, db: Session = Depends(get_db)) -> Any:
+    if hasattr(request.state, "user"):
+        return request.state.user
+
     authorization: str | None = request.headers.get("Authorization")
 
     if not authorization:
@@ -99,19 +123,35 @@ def verify_optional_token(request: Request) -> dict | None:
         )
 
     payload = verify_token(token)
-    request.state.user = payload
-    return payload
+
+    username = payload.get("sub")
+    if not username:
+        raise CustomException(
+            "Invalid token payload",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    from app.user.models import UserModel
+    user = db.query(UserModel).filter(UserModel.username == username).first()
+    if not user:
+        raise CustomException(
+            "User not found",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    request.state.user = user
+    return user
 
 
-def get_current_user(request: Request) -> dict:
+def get_current_user(request: Request, db: Session = Depends(get_db)) -> Any:
     if not hasattr(request.state, "user") or request.state.user is None:
-        return verify_required_token(request)
+        return verify_required_token(request, db)
     return request.state.user
 
 
-def get_optional_user(request: Request) -> dict | None:
+def get_optional_user(request: Request, db: Session = Depends(get_db)) -> Any:
     if not hasattr(request.state, "user"):
-        return verify_optional_token(request)
+        return verify_optional_token(request, db)
     return request.state.user
 
 

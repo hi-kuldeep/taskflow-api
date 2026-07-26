@@ -52,12 +52,8 @@ def login_user_router(
     status_code=status.HTTP_200_OK,
 )
 @protected
-def get_me(request: Request, db: Session = Depends(get_db)) -> SuccessResponseDict[UserResponseSchema]:
-    from app.user.models import UserModel
-    user_payload = request.state.user
-    user = db.query(UserModel).filter(UserModel.username == user_payload["sub"]).first()
-    if not user:
-        raise CustomException("User not found", status_code=status.HTTP_404_NOT_FOUND)
+def get_me(request: Request) -> SuccessResponseDict[UserResponseSchema]:
+    user = request.state.user
     return {
         "message": "User profile fetched successfully!",
         "status": status.HTTP_200_OK,
