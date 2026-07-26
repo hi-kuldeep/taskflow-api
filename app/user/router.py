@@ -1,13 +1,16 @@
 from app.user.dto.login_dto import LoginResponse, LoginSchema
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.orm import Session
 
 from app.constant.response_model import SuccessResponseDict, SuccessResponseSchema
 from app.core import get_db
 from app.user.controller import create_user, login_user
 from app.user.dto.user_dto import UserResponseSchema, UserSchema
+from app.core.auth_route import PublicRoute
+from app.utils.security import protected, optional_auth
+from app.constant.exception import CustomException
 
-user_routes = APIRouter(prefix="/user", tags=["User"])
+user_routes = APIRouter(prefix="/user", tags=["User"], route_class=PublicRoute)
 
 
 @user_routes.post(
@@ -41,3 +44,41 @@ def login_user_router(
         "status": status.HTTP_200_OK,
         "data": data,
     }
+
+
+@user_routes.get(
+    "/me",
+    response_model=SuccessResponseSchema[UserResponseSchema],
+    status_code=status.HTTP_200_OK,
+)
+@protected
+def get_me(request: Request, db: Session = Depends(get_db)) -> SuccessResponseDict[UserResponseSchema]:
+    from app.user.models import UserModel
+    user_payload = request.state.user
+    user = db.query(UserModel).filter(UserModel.username == user_payload["sub"]).first()
+    if not user:
+        raise CustomException("User not found", status_code=status.HTTP_404_NOT_FOUND)
+    return {
+        "message": "User profile fetched successfully!",
+        "status": status.HTTP_200_OK,
+        "data": user,
+    }
+
+
+@user_routes.get(
+    "/test-optional",
+    status_code=status.HTTP_200_OK,
+)
+@optional_auth
+def test_optional(request: Request):
+    user = getattr(request.state, "user", None)
+    if user:
+        return {
+            "message": "Authenticated user access",
+            "user": user,
+        }
+    return {
+        "message": "Anonymous user access",
+        "user": None,
+    }
+

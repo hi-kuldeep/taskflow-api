@@ -1,3 +1,5 @@
+from app.core.auth_route import ProtectedRoute
+from app.utils.security import public, protected, optional_auth
 from fastapi import APIRouter, Depends, status
 from app.tasks import create_task, get_tasks, get_task_by_id, update_task, delete_task
 from app.tasks.dtos import TaskSchema, TaskUpdateSchema, TaskResponseSchema
@@ -5,7 +7,7 @@ from app.core import get_db
 from sqlalchemy.orm import Session
 from app.constant.response_model import SuccessResponseSchema, SuccessResponseDict
 
-task_routes = APIRouter(prefix="/tasks", tags=["Tasks"])
+task_routes = APIRouter(prefix="/tasks", tags=["Tasks"], route_class=ProtectedRoute)
 
 
 @task_routes.post(
