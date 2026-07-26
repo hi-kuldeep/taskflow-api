@@ -1,3 +1,4 @@
+from app.user.router import user_routes
 from fastapi import FastAPI
 from app.core.db import Base, engine
 from app.tasks.router import task_routes
@@ -12,9 +13,9 @@ app = FastAPI()
 register_error_handlers(app)
 
 app.include_router(task_routes)
+app.include_router(user_routes)
 
 
 @app.get("/")
 async def read_root():
     return {"message": "TaskFlow API is running"}
-

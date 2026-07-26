@@ -1,6 +1,9 @@
 {
-  "recommendations": [
-    "esbenp.prettier-vscode",
-    "ms-python.black-formatter"
-  ]
+    "recommendations": [
+        "esbenp.prettier-vscode",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+    ]
 }
