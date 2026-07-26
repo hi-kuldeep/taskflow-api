@@ -1,31 +1,37 @@
-from pydantic import ConfigDict
 import uuid
-from pydantic import BaseModel, Field, EmailStr
+from typing import Annotated
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from datetime import datetime
 
 
-class UserSchema(BaseModel):
-    username: str = Field(
+UsernameField = Annotated[
+    str,
+    Field(
         ...,
         description="User name",
         min_length=3,
         max_length=50,
-    )
-    email: EmailStr = Field(
-        ...,
-        description="User email",
-    )
-    password: str = Field(
+    ),
+]
+
+PasswordField = Annotated[
+    str,
+    Field(
         ...,
         description="User password",
         min_length=6,
         max_length=20,
+    ),
+]
+
+
+class UserSchema(BaseModel):
+    username: UsernameField
+    email: EmailStr = Field(
+        ...,
+        description="User email",
     )
-
-
-# class UserResponseSchema(UserSchema):
-#     id: uuid.UUID
-#     model_config = ConfigDict(from_attributes=True)
+    password: PasswordField
 
 
 class UserResponseSchema(BaseModel):
