@@ -1,13 +1,20 @@
+import uuid
 from fastapi import Request
 from app.constant.exception import CustomException
 from app.tasks.dtos import TaskSchema, TaskUpdateSchema
 from sqlalchemy.orm import Session
 from app.tasks.models import TaskModel
 from fastapi import HTTPException, status
+from app.user.models import UserModel
 
 
 def create_task(body: TaskSchema, db: Session, request: Request):
-    user = getattr(request.state, "user", None)
+    user: UserModel | None = getattr(request.state, "user", None)
+    if not user:
+        raise CustomException(
+            "User not authenticated",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
     data = body.model_dump()
     new_task = TaskModel(**data, createdBy=user.id)
     db.add(new_task)
@@ -16,8 +23,8 @@ def create_task(body: TaskSchema, db: Session, request: Request):
     return new_task
 
 
-def get_tasks(db: Session):
-    tasks = db.query(TaskModel).all()
+def get_task_by_user_id(db: Session, user_id: uuid.UUID | str):
+    tasks = db.query(TaskModel).filter(TaskModel.createdBy == user_id)
     return tasks
 
 

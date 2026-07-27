@@ -1,12 +1,22 @@
+from app.user.dto.user_dto import UserResponseSchema
+from logging import log
 from app.core.auth_route import ProtectedRoute
 from app.utils.security import public, protected, optional_auth
 from fastapi import APIRouter, Depends, status
-from app.tasks import create_task, get_tasks, get_task_by_id, update_task, delete_task
+from app.tasks import (
+    create_task,
+    get_task_by_user_id,
+    get_task_by_id,
+    update_task,
+    delete_task,
+)
 from app.tasks.dtos import TaskSchema, TaskUpdateSchema, TaskResponseSchema
 from app.core import get_db
 from sqlalchemy.orm import Session
 from app.constant.response_model import SuccessResponseSchema, SuccessResponseDict
 from fastapi import Request
+from app.constant.exception import CustomException
+from app.user.models import UserModel
 
 task_routes = APIRouter(prefix="/tasks", tags=["Tasks"], route_class=ProtectedRoute)
 
@@ -32,8 +42,16 @@ def create_task_router(
     response_model=SuccessResponseSchema[list[TaskResponseSchema]],
     status_code=status.HTTP_200_OK,
 )
-def get_all_tasks(db: Session = Depends(get_db)):
-    tasks = get_tasks(db)
+def get_all_tasks(
+    request: Request, db: Session = Depends(get_db)
+) -> SuccessResponseDict:
+    user: UserResponseSchema | None = getattr(request.state, "user", None)
+    if not user:
+        raise CustomException(
+            "User not authenticated",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+    tasks = get_task_by_user_id(db, user.id)
     return {
         "message": "Tasks fetched successfully!",
         "status": status.HTTP_200_OK,
