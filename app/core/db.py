@@ -1,7 +1,9 @@
+from typing import Annotated
+from fastapi import Depends
 import logging
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from app.core import settings
 
 logger = logging.getLogger("uvicorn.error")
@@ -26,3 +28,9 @@ def get_db():
         yield session
     finally:
         session.close()
+
+
+DB_Session = Annotated[
+    Session,
+    Depends(get_db),
+]

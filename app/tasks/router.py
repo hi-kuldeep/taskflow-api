@@ -1,4 +1,4 @@
-from app.utils.security import DB_Session
+from app.core import DB_Session
 from app.utils.security import CurrentUser
 from app.user.dto.user_dto import UserResponseSchema
 from logging import log

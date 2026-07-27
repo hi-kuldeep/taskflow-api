@@ -1,68 +1,11 @@
-from typing import Annotated
-from app.user.models import UserModel
-from datetime import datetime, timedelta, timezone
-from enum import Enum
-from typing import Callable, TypeVar, Any
-import jwt
-from jwt import InvalidTokenError, ExpiredSignatureError
-from pwdlib import PasswordHash
+from typing import Annotated, Any
 from fastapi import Depends, Request, status
 from sqlalchemy.orm import Session
 
 from app.core import get_db
-from app.core.config import settings
+from app.user.models import UserModel
 from app.constant.exception import CustomException
-
-password_hash = PasswordHash.recommended()
-
-
-class AuthMode(str, Enum):
-    PUBLIC = "public"
-    PROTECTED = "protected"
-    OPTIONAL = "optional"
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return password_hash.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str) -> str:
-    return password_hash.hash(password)
-
-
-def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-        )
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
-    )
-    return encoded_jwt
-
-
-def verify_token(token: str) -> dict:
-    try:
-        payload = jwt.decode(
-            token,
-            settings.JWT_SECRET_KEY,
-            algorithms=[settings.JWT_ALGORITHM],
-        )
-        return payload
-    except ExpiredSignatureError:
-        raise CustomException(
-            "Token expired",
-            status_code=status.HTTP_401_UNAUTHORIZED,
-        )
-    except InvalidTokenError:
-        raise CustomException(
-            "Invalid token",
-            status_code=status.HTTP_401_UNAUTHORIZED,
-        )
+from app.utils.security.token import verify_token
 
 
 def verify_required_token(request: Request, db: Session = Depends(get_db)) -> Any:
@@ -147,36 +90,6 @@ def verify_optional_token(request: Request, db: Session = Depends(get_db)) -> An
     return user
 
 
-def get_current_user(request: Request, db: Session = Depends(get_db)) -> Any:
-    if not hasattr(request.state, "user") or request.state.user is None:
-        return verify_required_token(request, db)
-    return request.state.user
-
-
-def get_optional_user(request: Request, db: Session = Depends(get_db)) -> Any:
-    if not hasattr(request.state, "user"):
-        return verify_optional_token(request, db)
-    return request.state.user
-
-
-F = TypeVar("F", bound=Callable[..., Any])
-
-
-def public(func: F) -> F:
-    setattr(func, "__auth_mode__", AuthMode.PUBLIC)
-    return func
-
-
-def protected(func: F) -> F:
-    setattr(func, "__auth_mode__", AuthMode.PROTECTED)
-    return func
-
-
-def optional_auth(func: F) -> F:
-    setattr(func, "__auth_mode__", AuthMode.OPTIONAL)
-    return func
-
-
 def get_current_user(request: Request) -> UserModel:
     user = getattr(request.state, "user", None)
     if not user:
@@ -185,12 +98,6 @@ def get_current_user(request: Request) -> UserModel:
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
     return user
-
-
-DB_Session = Annotated[
-    Session,
-    Depends(get_db),
-]
 
 
 CurrentUser = Annotated[

@@ -5,7 +5,8 @@ from app.constant.response_model import SuccessResponseDict, SuccessResponseSche
 from app.user.controller import create_user, login_user
 from app.user.dto.user_dto import UserResponseSchema, UserSchema
 from app.core.auth_route import PublicRoute
-from app.utils.security import protected, optional_auth, DB_Session
+from app.core import DB_Session
+from app.utils.security import protected, optional_auth
 from app.constant.exception import CustomException
 
 user_routes = APIRouter(prefix="/user", tags=["User"], route_class=PublicRoute)
