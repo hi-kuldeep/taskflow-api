@@ -8,13 +8,11 @@ from fastapi import HTTPException, status
 from app.user.models import UserModel
 
 
-def create_task(body: TaskSchema, db: Session, request: Request):
-    user: UserModel | None = getattr(request.state, "user", None)
-    if not user:
-        raise CustomException(
-            "User not authenticated",
-            status_code=status.HTTP_401_UNAUTHORIZED,
-        )
+def create_task(
+    body: TaskSchema,
+    db: Session,
+    user: UserModel,
+):
     data = body.model_dump()
     new_task = TaskModel(**data, createdBy=user.id)
     db.add(new_task)

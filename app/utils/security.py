@@ -1,3 +1,5 @@
+from typing import Annotated
+from app.user.models import UserModel
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Callable, TypeVar, Any
@@ -84,7 +86,7 @@ def verify_required_token(request: Request, db: Session = Depends(get_db)) -> An
         )
 
     payload = verify_token(token)
-    
+
     username = payload.get("sub")
     if not username:
         raise CustomException(
@@ -93,6 +95,7 @@ def verify_required_token(request: Request, db: Session = Depends(get_db)) -> An
         )
 
     from app.user.models import UserModel
+
     user = db.query(UserModel).filter(UserModel.username == username).first()
     if not user:
         raise CustomException(
@@ -132,6 +135,7 @@ def verify_optional_token(request: Request, db: Session = Depends(get_db)) -> An
         )
 
     from app.user.models import UserModel
+
     user = db.query(UserModel).filter(UserModel.username == username).first()
     if not user:
         raise CustomException(
@@ -172,3 +176,24 @@ def optional_auth(func: F) -> F:
     setattr(func, "__auth_mode__", AuthMode.OPTIONAL)
     return func
 
+
+def get_current_user(request: Request) -> UserModel:
+    user = getattr(request.state, "user", None)
+    if not user:
+        raise CustomException(
+            "User not authenticated",
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+    return user
+
+
+DB_Session = Annotated[
+    Session,
+    Depends(get_db),
+]
+
+
+CurrentUser = Annotated[
+    UserModel,
+    Depends(get_current_user),
+]

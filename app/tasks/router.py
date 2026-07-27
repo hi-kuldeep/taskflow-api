@@ -1,3 +1,5 @@
+from app.utils.security import DB_Session
+from app.utils.security import CurrentUser
 from app.user.dto.user_dto import UserResponseSchema
 from logging import log
 from app.core.auth_route import ProtectedRoute
@@ -11,8 +13,6 @@ from app.tasks import (
     delete_task,
 )
 from app.tasks.dtos import TaskSchema, TaskUpdateSchema, TaskResponseSchema
-from app.core import get_db
-from sqlalchemy.orm import Session
 from app.constant.response_model import SuccessResponseSchema, SuccessResponseDict
 from fastapi import Request
 from app.constant.exception import CustomException
@@ -27,9 +27,9 @@ task_routes = APIRouter(prefix="/tasks", tags=["Tasks"], route_class=ProtectedRo
     status_code=status.HTTP_201_CREATED,
 )
 def create_task_router(
-    task_schema: TaskSchema, request: Request, db: Session = Depends(get_db)
+    task_schema: TaskSchema, user: CurrentUser, db: DB_Session
 ) -> SuccessResponseDict[TaskResponseSchema]:
-    task = create_task(task_schema, db, request)
+    task = create_task(task_schema, db, user)
     return {
         "message": "Task created successfully!",
         "status": status.HTTP_201_CREATED,
@@ -43,7 +43,7 @@ def create_task_router(
     status_code=status.HTTP_200_OK,
 )
 def get_all_tasks(
-    request: Request, db: Session = Depends(get_db)
+    request: Request, db: DB_Session
 ) -> SuccessResponseDict:
     user: UserResponseSchema | None = getattr(request.state, "user", None)
     if not user:
@@ -64,7 +64,7 @@ def get_all_tasks(
     response_model=SuccessResponseSchema[TaskResponseSchema],
     status_code=status.HTTP_200_OK,
 )
-def get_task_by_id_router(task_id: str, db: Session = Depends(get_db)):
+def get_task_by_id_router(task_id: str, db: DB_Session):
     task = get_task_by_id(task_id, db)
     return {
         "message": "Task fetched successfully!",
@@ -79,7 +79,7 @@ def get_task_by_id_router(task_id: str, db: Session = Depends(get_db)):
     status_code=status.HTTP_200_OK,
 )
 def update_task_route(
-    body: TaskUpdateSchema, task_id: str, db: Session = Depends(get_db)
+    body: TaskUpdateSchema, task_id: str, db: DB_Session
 ):
     task = update_task(body, task_id, db)
     return {
@@ -94,7 +94,7 @@ def update_task_route(
     response_model=SuccessResponseSchema[None],
     status_code=status.HTTP_200_OK,
 )
-def delete_task_route(task_id: str, db: Session = Depends(get_db)):
+def delete_task_route(task_id: str, db: DB_Session):
     delete_task(task_id, db)
     return {
         "message": "Task deleted successfully!",

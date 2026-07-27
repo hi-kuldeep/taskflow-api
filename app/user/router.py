@@ -1,13 +1,11 @@
 from app.user.dto.login_dto import LoginResponse, LoginSchema
 from fastapi import APIRouter, Depends, status, Request
-from sqlalchemy.orm import Session
 
 from app.constant.response_model import SuccessResponseDict, SuccessResponseSchema
-from app.core import get_db
 from app.user.controller import create_user, login_user
 from app.user.dto.user_dto import UserResponseSchema, UserSchema
 from app.core.auth_route import PublicRoute
-from app.utils.security import protected, optional_auth
+from app.utils.security import protected, optional_auth, DB_Session
 from app.constant.exception import CustomException
 
 user_routes = APIRouter(prefix="/user", tags=["User"], route_class=PublicRoute)
@@ -19,7 +17,7 @@ user_routes = APIRouter(prefix="/user", tags=["User"], route_class=PublicRoute)
     status_code=status.HTTP_201_CREATED,
 )
 def create_user_router(
-    user_schema: UserSchema, db: Session = Depends(get_db)
+    user_schema: UserSchema, db: DB_Session
 ) -> SuccessResponseDict[UserResponseSchema]:
     user = create_user(user_schema, db)
     return {
@@ -35,7 +33,7 @@ def create_user_router(
     status_code=status.HTTP_200_OK,
 )
 def login_user_router(
-    body: LoginSchema, db: Session = Depends(get_db)
+    body: LoginSchema, db: DB_Session
 ) -> SuccessResponseDict[LoginResponse]:
     data = login_user(body, db)
 
@@ -77,4 +75,3 @@ def test_optional(request: Request):
         "message": "Anonymous user access",
         "user": None,
     }
-
