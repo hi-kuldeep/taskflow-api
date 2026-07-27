@@ -6,6 +6,7 @@ from app.tasks.dtos import TaskSchema, TaskUpdateSchema, TaskResponseSchema
 from app.core import get_db
 from sqlalchemy.orm import Session
 from app.constant.response_model import SuccessResponseSchema, SuccessResponseDict
+from fastapi import Request
 
 task_routes = APIRouter(prefix="/tasks", tags=["Tasks"], route_class=ProtectedRoute)
 
@@ -16,9 +17,9 @@ task_routes = APIRouter(prefix="/tasks", tags=["Tasks"], route_class=ProtectedRo
     status_code=status.HTTP_201_CREATED,
 )
 def create_task_router(
-    task_schema: TaskSchema, db: Session = Depends(get_db)
+    task_schema: TaskSchema, request: Request, db: Session = Depends(get_db)
 ) -> SuccessResponseDict[TaskResponseSchema]:
-    task = create_task(task_schema, db)
+    task = create_task(task_schema, db, request)
     return {
         "message": "Task created successfully!",
         "status": status.HTTP_201_CREATED,

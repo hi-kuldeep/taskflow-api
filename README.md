@@ -27,3 +27,16 @@ A production-ready task management REST API built with FastAPI, PostgreSQL, SQLA
 - File Uploads
 - API Documentation (Swagger/OpenAPI)
 - Production-Ready Project Structure
+
+## 🛠️ Database Migrations (Alembic)
+
+To generate a new database migration:
+```bash
+alembic revision --autogenerate -m "add user_id to tasks"
+```
+
+To apply migrations and upgrade the database schema:
+```bash
+alembic upgrade head
+```
+

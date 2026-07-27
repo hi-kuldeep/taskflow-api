@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 from pydantic import ConfigDict
 
+
 class TaskSchema(PartialModelMixin, BaseModel):
     title: str = Field(
         ...,
@@ -22,9 +23,10 @@ class TaskSchema(PartialModelMixin, BaseModel):
     )
 
 
+TaskUpdateSchema = TaskSchema.model_as_partial()
 
-TaskUpdateSchema = TaskSchema.model_as_partial() 
 
 class TaskResponseSchema(TaskSchema):
-    id : uuid.UUID
+    id: uuid.UUID
+    createdBy: uuid.UUID
     model_config = ConfigDict(from_attributes=True)
