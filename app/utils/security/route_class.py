@@ -1,10 +1,8 @@
-# app/core/auth_route.py
-
 from fastapi import Depends
 from fastapi.routing import APIRoute
 
-from app.utils.security import (
-    AuthMode,
+from app.utils.security.decorators import AuthMode
+from app.utils.security.dependencies import (
     verify_required_token,
     verify_optional_token,
 )
@@ -40,4 +38,3 @@ class ProtectedRoute(BaseAuthRoute):
 
 class PublicRoute(BaseAuthRoute):
     default_auth_mode = AuthMode.PUBLIC
-

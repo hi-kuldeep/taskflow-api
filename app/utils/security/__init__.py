@@ -7,3 +7,4 @@ from app.utils.security.dependencies import (
     get_current_user,
     CurrentUser,
 )
+from app.utils.security.route_class import BaseAuthRoute, ProtectedRoute, PublicRoute
